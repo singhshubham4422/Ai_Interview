@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
+import Image from 'next/image';
 
 type AppState = 'IDLE' | 'UPLOADING' | 'INTERVIEW_ACTIVE' | 'EVALUATING' | 'FINISHED';
 type InterviewState = 'AI_THINKING' | 'AI_SPEAKING' | 'USER_SPEAKING';
@@ -126,6 +127,10 @@ export default function Home() {
 
   const speak = (text: string) => {
     if (!synthesisRef.current) return;
+    
+    // WORKAROUND FOR CHROME/EDGE BUG: Cancel any stuck utterances before speaking
+    synthesisRef.current.cancel();
+
     setInterviewState('AI_SPEAKING');
     setAiSubtitle(text);
     
@@ -133,9 +138,14 @@ export default function Home() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    if (selectedVoiceURI) {
-       const voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
-       if (voice) utterance.voice = voice;
+    // Ensure we have a valid voice, fallback to first English voice if available
+    let voice = availableVoices.find(v => v.voiceURI === selectedVoiceURI);
+    if (!voice && availableVoices.length > 0) {
+      voice = availableVoices[0];
+    }
+    
+    if (voice) {
+      utterance.voice = voice;
     }
     
     utterance.rate = voiceSpeed;
@@ -146,7 +156,10 @@ export default function Home() {
       startListening();
     };
 
-    synthesisRef.current.speak(utterance);
+    // Minor delay helps guarantee the cancel() call clears the queue
+    setTimeout(() => {
+      synthesisRef.current?.speak(utterance);
+    }, 50);
   };
 
   const startListening = () => {
@@ -508,7 +521,7 @@ export default function Home() {
                <h3 className="participant-name">AI_Interviewer</h3>
                <div className="avatar-wrapper">
                   <div className="pulse-ring-avatar"></div>
-                  <img src="/ai_logo.png" alt="AI Avatar" className="avatar-img" />
+                  <Image src="/ai_logo.png" alt="AI Avatar" className="avatar-img" width={160} height={160} priority />
                </div>
                
                <div className="status-badge">
@@ -528,7 +541,7 @@ export default function Home() {
                <h3 className="participant-name">{applicantName || 'Applicant'}</h3>
                <div className="avatar-wrapper">
                   <div className="pulse-ring-avatar"></div>
-                  <img src="/applicant_logo.png" alt="Applicant Avatar" className="avatar-img" />
+                  <Image src="/applicant_logo.png" alt="Applicant Avatar" className="avatar-img" width={160} height={160} priority />
                </div>
                
                <div className="status-badge">
