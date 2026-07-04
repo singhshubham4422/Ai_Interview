@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     - Speak directly, naturally, and fast.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-lite',
+      model: 'gemini-flash-latest',
       contents: prompt,
       config: {
         maxOutputTokens: 100,
