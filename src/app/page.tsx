@@ -49,9 +49,14 @@ export default function Home() {
         // Filter English voices to avoid clutter
         const enVoices = voices.filter(v => v.lang.startsWith('en'));
         setAvailableVoices(enVoices);
-        if (enVoices.length > 0 && !selectedVoiceURI) {
-           setSelectedVoiceURI(enVoices[0].voiceURI);
-        }
+        
+        // Use functional state update to prevent stale closures from overwriting the user's choice
+        setSelectedVoiceURI((prev) => {
+          if (!prev && enVoices.length > 0) {
+             return enVoices[0].voiceURI;
+          }
+          return prev;
+        });
       };
 
       loadVoices();
