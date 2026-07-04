@@ -323,7 +323,7 @@ export default function Home() {
   return (
     <main className="container">
       {appState === 'IDLE' && (
-        <div className="glass-panel" style={{ padding: '4rem 3rem' }}>
+        <div className="glass-panel idle-panel">
           <h1 className="title">AI Interviewer</h1>
           <p className="subtitle" style={{ fontSize: '1.3rem' }}>Configure your profile and preferences to begin your technical interview.</p>
           

@@ -485,11 +485,31 @@ h1, h2, h3 {
   line-height: 1.5;
 }
 
+.idle-panel {
+  padding: 4rem 3rem;
+}
+
 @media (max-width: 768px) {
   .split-screen {
     flex-direction: column;
   }
   .input-row {
     flex-direction: column;
+  }
+  .setup-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .title {
+    font-size: 2.5rem;
+  }
+  .idle-panel {
+    padding: 2rem 1.5rem;
+  }
+  .glass-panel {
+    padding: 2rem 1.5rem;
+  }
+  .container {
+    padding: 1rem;
   }
 }
