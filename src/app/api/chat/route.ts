@@ -21,35 +21,46 @@ export async function POST(req: Request) {
     // Construct the prompt for the next question/feedback
     // history should be an array of objects: { role: 'user' | 'model', text: string }
     
+    // Truncate history to the last 4 messages to save processing time
+    let recentHistory = history || [];
+    if (recentHistory.length > 4) {
+      recentHistory = recentHistory.slice(-4);
+    }
+    
     let conversationHistory = "";
-    if (history && history.length > 0) {
-      conversationHistory = history.map((msg: any) => `${msg.role === 'user' ? applicant : 'AI_Interviewer'}: ${msg.text}`).join('\n');
+    if (recentHistory.length > 0) {
+      conversationHistory = recentHistory.map((msg: any) => `${msg.role === 'user' ? applicant : 'AI_Interviewer'}: ${msg.text}`).join('\n');
     }
 
-    const prompt = `You are an expert technical interviewer named AI_Interviewer conducting an interview with ${applicant}.
+    const prompt = `You are an expert technical interviewer named AI_Interviewer conducting a lightning-fast voice interview with ${applicant}.
     
-    ${jobDescription ? `Job Description / Role context:\n${jobDescription}\n` : ''}
-    Resume Context:
-    ${resumeText.substring(0, 5000)}
+    ${jobDescription ? `Job Context:\n${jobDescription}\n` : ''}
+    Resume Summary:
+    ${resumeText.substring(0, 2500)}
     
-    Conversation History:
+    Recent Conversation:
     ${conversationHistory}
     
     ${applicant}'s latest answer:
     ${answer}
     
     Task:
-    1. Briefly acknowledge or evaluate ${applicant}'s answer (1-2 sentences).
-    2. Ask the next relevant interview question based on their answer, the Job Description, and their resume.
-    
-    Make sure your response sounds natural and conversational to be spoken aloud. Do not include any formatting like bolding or bullet points. Just output plain text.`;
+    Acknowledge the answer very briefly and ask ONE highly relevant follow-up question.
+    CRITICAL RULES:
+    - Keep your entire response under 2 short sentences.
+    - NEVER use markdown, formatting, or bullet points.
+    - Speak directly, naturally, and fast.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash-lite',
       contents: prompt,
+      config: {
+        maxOutputTokens: 100,
+        temperature: 0.7,
+      }
     });
     
-    const reply = response.text || `Thank you, ${applicant}. Let's move on to the next topic. Can you tell me about your experience working in a team?`;
+    const reply = response.text || `Thank you, ${applicant}. What would you say is your greatest technical strength?`;
     
     return NextResponse.json({ 
       success: true, 
